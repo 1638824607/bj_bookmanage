@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>身份列表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/static/admin/lib/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/admin.css" media="all">
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div style="padding-bottom: 10px;">
+                <button class="layui-btn layuiadmin-btn-list form-add">添加</button>
+            </div>
+            <div>
+                <table id="list_table" lay-filter="list_table"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display: none" id="form-data">
+    <div class="layui-form" lay-filter="form-data" style="padding: 20px 30px 0 0;">
+
+        <input type="hidden" name="cate_id">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">身份名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="cate_name" lay-verify="required" placeholder="请输入名称" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">期限(天)</label>
+            <div class="layui-input-block">
+                <input type="number" name="limit_day" lay-verify="required" placeholder="请输入期限" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">数量(本)</label>
+            <div class="layui-input-block">
+                <input type="number" name="limit_num" lay-verify="required" placeholder="请输入数量" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="form-submit" id="form-submit" value="确认">
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="table-content-list">
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon  layui-icon-edit"></i>编辑</a>
+</script>
+
+<script src="/static/admin/lib/layui/layui.js"></script>
+<script>
+    var user_cate_table_url = '{:url("user/user_cate_table")}';
+    var user_cate_save  = '{:url("user/user_cate_save")}';
+
+    layui.use(['jquery','table','form', 'upload'], function() {
+        var $      = layui.$;
+        var table  = layui.table;
+        var form   = layui.form;
+        var layer   = layui.layer;
+
+        // 数据表格渲染
+        table.render({
+            elem: '#list_table'
+            ,url: user_cate_table_url //数据接口
+            ,method:'post'
+            ,page: true //开启分页
+            ,limit:20  //每页行数 默认10
+            ,limits: [10, 20, 30]
+            ,cols: [[ //表头
+                {field : 'cate_id', title: '身份ID', sort: true, fixed: 'left'}
+                ,{field: 'cate_name',title: '身份名称'}
+                ,{field: 'limit_day',title: '期限'}
+                ,{field: 'limit_num',title: '数量'}
+                ,{field: 'created_at',width:180,title: '创建时间', templet:'<div>{{d.created_at}}</div>'}
+                ,{field: 'updated_at',width:180, title: '更新时间', templet:'<div>{{d.updated_at}}</div>'}
+                ,{title: "操作",align: "center", fixed: "right", toolbar: "#table-content-list"}
+            ]]
+        });
+
+        $('.form-add').on('click', function()
+        {
+            form.val('form-data',{
+                'cate_id' : 0,
+                'cate_name' : '',
+                'limit_day' : '',
+                'limit_num' : ''
+            });
+
+            layer.open({
+                type: 1
+                ,title: '添加身份'
+                ,content: $('#form-data')
+                ,maxmin: true
+                ,area: ['850px', '650px']
+                ,btn: ['确定', '取消']
+                ,yes: function(index, layero){
+                    $('#form-submit').click();
+                }
+            });
+        });
+
+        table.on('tool(list_table)', function(obj)
+        {
+            var data = obj.data;
+
+            if(obj.event === 'edit')
+            {
+
+                form.val('form-data',{
+                    'cate_id' : data.cate_id,
+                    'cate_name' : data.cate_name,
+                    'limit_day' : data.limit_day,
+                    'limit_num' : data.limit_num
+                });
+
+                layer.open({
+                    type: 1
+                    ,title: '修改身份'
+                    ,content: $('#form-data')
+                    ,maxmin: true
+                    ,area: ['850px', '650px']
+                    ,btn: ['确定', '取消']
+                    ,yes: function(index, layero){
+                        $('#form-submit').click();
+                    }
+                });
+            }
+        });
+
+        form.on('submit(form-submit)', function(data)
+        {
+
+            $.post(
+                user_cate_save,
+                data.field,
+                function(res){
+                    layer.msg(res.msg, {shade:0.1,time:1500}, function(){
+                        if(res.code == 1)
+                        {
+                            table.reload('list_table'); //重载表格
+                            layer.closeAll();
+                        }
+
+
+                    });
+                },'json'
+            );
+        });
+    });
+</script>
+</body>
+</html>

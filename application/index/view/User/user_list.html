@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>用户列表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/static/admin/lib/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/admin.css" media="all">
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">用户编号</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="user_name" placeholder="请输入用户编号" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">姓名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="user_nickname" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <button class="layui-btn layuiadmin-btn-list" lay-submit lay-filter="book-search-form-submit">
+                        <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <div style="padding-bottom: 10px;">
+                <button class="layui-btn layuiadmin-btn-list form-add">添加</button>
+            </div>
+            <div>
+                <table id="list_table" lay-filter="list_table"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display: none" id="form-data">
+    <div class="layui-form" lay-filter="form-data" style="padding: 20px 30px 0 0;">
+
+        <input type="hidden" name="user_id">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">编号</label>
+            <div class="layui-input-inline">
+                <input type="number" name="user_name" lay-verify="required" placeholder="请输入编号" autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">注:登录账号</div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">姓名</label>
+            <div class="layui-input-block">
+                <input type="text" name="user_nickname" lay-verify="required" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态</label>
+            <div class="layui-input-block">
+                <select name="user_status" lay-verify="required">
+                    <option value=""></option>
+                    <option value="1">屏蔽</option>
+                    <option value="2">正常</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">身份</label>
+            <div class="layui-input-block">
+                <select name="user_cate" lay-verify="required">
+                    <option value=""></option>
+                    <?php if(! empty($userCateList))
+                    {
+                        foreach($userCateList as $userCateRow)
+                        { ?>
+                            <option value="<?php echo $userCateRow['cate_id']; ?>"><?php echo $userCateRow['cate_name']; ?></option>
+                    <?php }
+                   } ?>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-hide">
+            <input type="button" lay-submit lay-filter="form-submit" id="form-submit" value="确认">
+        </div>
+    </div>
+</div>
+
+<script type="text/html" id="table-content-list">
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon  layui-icon-edit"></i>编辑</a>
+</script>
+
+<script src="/static/admin/lib/layui/layui.js"></script>
+<script>
+    var user_table_url = '{:url("user/user_table")}';
+    var user_save  = '{:url("user/user_save")}';
+
+    layui.use(['jquery','table','form', 'upload'], function() {
+        var $      = layui.$;
+        var table  = layui.table;
+        var form   = layui.form;
+        var layer   = layui.layer;
+
+        var userCateList   = {:json_encode($userCateList)};
+
+        // 数据表格渲染
+        table.render({
+            elem: '#list_table'
+            ,url: user_table_url //数据接口
+            ,method:'post'
+            ,page: true //开启分页
+            ,limit:20  //每页行数 默认10
+            ,limits: [10, 20, 30]
+            ,cols: [[ //表头
+                {field : 'user_name', title: '编号', sort: true}
+                ,{field: 'user_nickname',title: '姓名'}
+                ,{field: 'user_email',title: '邮箱'}
+                ,{field: 'user_cate', title: '身份',templet:function(d){
+                    return "<div>" + userCateList[d.user_cate]['cate_name']+"</div>"
+                }}
+                ,{field: 'user_status',  title: '状态',templet:'<div>{{d.user_status == 1 ? "屏蔽" : "正常"}}</div>'}
+                ,{field: 'last_ip',title: '登录IP'}
+                ,{field: 'last_time',width:180, title: '最后登录时间', templet:'<div>{{d.last_time}}</div>'}
+                ,{title: "操作",align: "center", fixed: "right", toolbar: "#table-content-list"}
+            ]]
+        });
+
+        $('.form-add').on('click', function()
+        {
+            form.val('form-data',{
+                'user_id' : '',
+                'user_name' : '',
+                'user_nickname' : '',
+                'user_cate' : '',
+                'user_status' : ''
+            });
+
+            layer.open({
+                type: 1
+                ,title: '添加用户'
+                ,content: $('#form-data')
+                ,maxmin: true
+                ,area: ['850px', '650px']
+                ,btn: ['确定', '取消']
+                ,yes: function(index, layero){
+                    $('#form-submit').click();
+                }
+            });
+        });
+
+        form.on('submit(book-search-form-submit)', function(data){
+            var field = data.field;
+
+            //执行重载
+            table.reload('list_table', {
+                where: field,
+                page: {curr: 1}
+            });
+        });
+
+        table.on('tool(list_table)', function(obj)
+        {
+            var data = obj.data;
+
+            if(obj.event === 'edit')
+            {
+
+                form.val('form-data',{
+                    'user_id' : data.user_id,
+                    'user_name' : data.user_name,
+                    'user_nickname' : data.user_nickname,
+                    'user_cate' : data.user_cate,
+                    'user_status' : data.user_status
+                });
+
+                layer.open({
+                    type: 1
+                    ,title: '修改用户'
+                    ,content: $('#form-data')
+                    ,maxmin: true
+                    ,area: ['850px', '650px']
+                    ,btn: ['确定', '取消']
+                    ,yes: function(index, layero){
+                        $('#form-submit').click();
+                    }
+                });
+            }
+        });
+
+        form.on('submit(form-submit)', function(data)
+        {
+
+            $.post(
+                user_save,
+                data.field,
+                function(res){
+                    layer.msg(res.msg, {shade:0.1,time:1500}, function(){
+                        if(res.code == 1)
+                        {
+                            table.reload('list_table'); //重载表格
+                            layer.closeAll();
+                        }
+
+
+                    });
+                },'json'
+            );
+        });
+    });
+</script>
+</body>
+</html>

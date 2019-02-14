@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>设置邮箱</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/static/admin/lib/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/admin.css" media="all">
+    <script src="/static/admin/lib/layui/layui.js"></script>
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">设置邮箱</div>
+                <div class="layui-card-body" pad15>
+
+                    <div class="layui-form" wid500 lay-filter="">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">当前邮箱</label>
+                            <div class="layui-input-block" style="width: 30%;">
+                                <input type="text" readonly value="{:session('user_info')['user_email']}"  class="layui-input">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">新邮箱</label>
+                            <div class="layui-input-block" style="width: 30%;">
+                                <input type="text" autocomplete="off" placeholder="请输入邮箱" name="user_email"  lay-verify="required" class="layui-input user_email">
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <div class="layui-col-xs7">
+                                <label class="layui-form-label">邮箱验证码</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" autocomplete="off" placeholder="请输入邮箱验证码" name="email_code"  lay-verify="required" class="layui-input">
+                                </div>
+                                <button type="button" class="layui-btn layui-btn-primary email_code">获取验证码</button>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button class="layui-btn" lay-submit lay-filter="set_email">确认保存</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+<script>
+    layui.use(['jquery','element','layer','form', 'upload'], function() {
+        var form = layui.form;
+        var $ = layui.jquery;
+        var layer = layui.layer;
+
+        var email_save_url = '{:url("system/email_save")}';
+        var send_email_url = '{:url("system/send_email")}';
+
+        form.on('submit(set_email)', function(data)
+        {
+            $.post(
+                email_save_url,
+                data.field,
+                function(res){
+                    layer.msg(res.msg, {shade:0.1,time:1500}, function(){
+                        if(res.code == 1)
+                        {
+                            layer.closeAll();
+                            window.location.reload();
+                        }
+
+                    });
+                },'json'
+            );
+        });
+
+        $('.email_code').click(function()
+        {
+            var user_email = $('.user_email').val();
+
+            if(user_email == '') {
+                layer.msg('请输入邮箱');
+                return false;
+            }
+
+            layer.msg('邮件发送中...', {
+                icon: 16
+                ,shade: 0.1
+                ,time:20000
+            });
+
+            $.post(
+                send_email_url,
+                {user_email:user_email},
+                function(res){
+                    layer.msg(res.msg, {shade:0.1,time:1000}, function(){
+                        if(res.code == 1) {
+                            layer.closeAll();
+                        }
+
+                    });
+                },'json'
+            );
+        });
+    });
+</script>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>网站设置</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/static/admin/lib/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/admin.css" media="all">
+    <script src="/static/admin/lib/layui/layui.js"></script>
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">用户检索</div>
+                <div class="layui-card-body" pad15>
+
+                    <div class="layui-form" wid100 lay-filter="">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">用户编号</label>
+                            <div class="layui-input-inline">
+                                <input type="text" autocomplete="off" placeholder="用户编号" name="user_name" maxlength="12" value="" lay-verify="required" class="layui-input">
+                            </div>
+                            <button class="layui-btn" lay-submit lay-filter="get_user">检索</button>
+                        </div>
+                    </div>
+
+                    <form class="layui-form layui-form-pane" action="">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">用户编号</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="用户编号" readonly  class="layui-input user_name">
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <label class="layui-form-label">姓名</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="姓名" readonly  class="layui-input user_nickname">
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <label class="layui-form-label">邮箱</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="邮箱" readonly  class="layui-input user_email">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">身份</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="身份" readonly  class="layui-input user_cate">
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <label class="layui-form-label">可借数量</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="可借数量" readonly  class="layui-input user_total">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+
+            </div>
+            <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header">图书检索</div>
+                    <div class="layui-card-body" pad15>
+                        <div class="layui-form" wid100 lay-filter="">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">图书编号</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" autocomplete="off" placeholder="图书编号" name="book_cert" maxlength="12" value="" lay-verify="required" class="layui-input">
+                                </div>
+                                <button class="layui-btn" lay-submit lay-filter="get_book">检索</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form class="layui-form layui-form-pane" action="">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">图书编号</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="图书编号" readonly  class="layui-input book_cert">
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <label class="layui-form-label">图书名称</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="图书名称" readonly  class="layui-input book_name">
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <label class="layui-form-label">图书类别</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="类别" readonly  class="layui-input book_cate">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">出版社</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="出版社" readonly  class="layui-input book_public">
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <label class="layui-form-label">书架位置</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="书架位置" readonly  class="layui-input book_place">
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <label class="layui-form-label">现有库存</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="现有库存" readonly  class="layui-input book_now_num">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+<script>
+
+    layui.use(['jquery','element','layer','form', 'upload'], function() {
+        var form = layui.form;
+        var $ = layui.jquery;
+        var layer = layui.layer;
+
+        var getUserInfoUrl = '{:url("lend/get_user_info")}';
+        var getBookInfoUrl = '{:url("lend/get_book_info")}';
+
+        form.on('submit(get_user)', function(data)
+        {
+            $.get(
+                getUserInfoUrl,
+                data.field,
+                function(res){
+                    layer.msg(res.msg, {shade:0.1,time:1000}, function(){
+                        if(res.code == 1)
+                        {
+                            layer.closeAll();
+                            $('.user_name').val(res.data.user_name);
+                            parent.user_name = res.data.user_name;
+                            $('.user_nickname').val(res.data.user_nickname);
+                            $('.user_email').val(res.data.user_email);
+                            $('.user_cate').val(res.data.user_cate);
+                            $('.user_total').val(res.data.user_total);
+                        }
+
+                    });
+                },'json'
+            );
+        });
+
+
+        form.on('submit(get_book)', function(data)
+        {
+            $.get(
+                getBookInfoUrl,
+                data.field,
+                function(res){
+                    layer.msg(res.msg, {shade:0.1,time:1000}, function(){
+                        if(res.code == 1)
+                        {
+                            layer.closeAll();
+                            $('.book_cert').val(res.data.book_cert);
+                            parent.book_cert = res.data.book_cert;
+                            $('.book_name').val(res.data.book_name);
+                            $('.book_cate').val(res.data.cate_name);
+                            $('.book_public').val(res.data.place_name);
+                            $('.book_place').val(res.data.place_name);
+                            $('.book_now_num').val(res.data.book_now_num);
+                        }
+
+                    });
+                },'json'
+            );
+        });
+    });
+</script>

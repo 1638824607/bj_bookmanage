@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>类别列表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/static/admin/lib/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/admin.css" media="all">
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">图书编号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="article_title" placeholder="请输入图书编号" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">图书名称</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="article_title" placeholder="请输入图书名称" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">用户编号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="article_title" placeholder="请输入用户编号" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <label class="layui-form-label">姓名</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="article_title" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-inline">
+                <button class="layui-btn layuiadmin-btn-list" lay-submit lay-filter="book-chapter-search-form-submit">
+                    <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+        <div class="layui-card-body">
+            <div>
+                <table id="list_table" lay-filter="list_table"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="/static/admin/lib/layui/layui.js"></script>
+<script>
+    var lend_table_url = '{:url("lend/lend_expired_table")}';
+//    var lend_save  = '{:url("lend/lend_save")}';
+
+    layui.use(['jquery','table','form', 'upload'], function() {
+        var $      = layui.$;
+        var table  = layui.table;
+        var form   = layui.form;
+        var layer   = layui.layer;
+
+        var lend_add = "{:url('lend/lend_add')}";
+
+        var cateList = <?php echo json_encode($cateList); ?>;
+        var publicList = <?php echo json_encode($publicList); ?>;
+        var placeList = <?php echo json_encode($placeList); ?>;
+
+        function timeFn(d1) {
+            var dateBegin = new Date(d1.replace(/-/g, "/"));//将-转化为/，使用new Date
+            var dateEnd = new Date();//获取当前时间
+            var dateDiff = dateEnd.getTime() - dateBegin.getTime();//时间差的毫秒数
+            var dayDiff = Math.floor(dateDiff / (24 * 3600 * 1000));//计算出相差天数
+            var leave1=dateDiff%(24*3600*1000)    //计算天数后剩余的毫秒数
+            var hours=Math.floor(leave1/(3600*1000))//计算出小时数
+            //计算相差分钟数
+            var leave2=leave1%(3600*1000)    //计算小时数后剩余的毫秒数
+            var minutes=Math.floor(leave2/(60*1000))//计算相差分钟数
+            //计算相差秒数
+            var leave3=leave2%(60*1000)      //计算分钟数后剩余的毫秒数
+            var seconds=Math.round(leave3/1000)
+            if(dayDiff == 0) {
+                return (hours+"小时 ")
+            }else {
+                return (dayDiff + "天" + hours + "小时 ")
+            }
+        }
+
+        // 数据表格渲染
+        table.render({
+            elem: '#list_table'
+            ,url: lend_table_url //数据接口
+            ,method:'post'
+            ,page: true //开启分页
+            ,limit:20  //每页行数 默认10
+            ,limits: [10, 20, 30]
+            ,cols: [[ //表头
+                {field : 'book_cert', title: '图书编号', sort: true}
+                ,{field : 'book_name', title: '图书名称'}
+                ,{field : 'book_cate', title: '图书类别',templet:function(d){
+                    var cateName = cateList[d.book_cate] ? cateList[d.book_cate]['cate_name'] : '已屏蔽';
+                    return "<div>" + cateName+"</div>"
+                }}
+
+                ,{field : 'book_place', title: '书架位置',templet:function(d){
+                    var placeName = placeList[d.book_place] ? placeList[d.book_place]['place_name'] : '已屏蔽';
+                    return "<div>" + placeName+"</div>"
+                }}
+                ,{field : 'user_name', title: '用户编号'}
+                ,{field : 'user_nickname', title: '姓名'}
+                ,{field : 'created_at',width:180,title: '借阅时间'}
+                ,{field : 'expired_time',width:180, title: '应还时间'}
+                ,{field : 'user_name',sort: true,title: '逾期时间',templet:function(d){
+                    return "<div>"+timeFn(d.expired_time)+"</div>"
+                }}
+            ]]
+        });
+
+        $('.form-add').on('click', function()
+        {
+            form.val('form-data',{
+                'book_id' : '',
+                'book_cert' : '',
+                'book_name' : '',
+                'book_cate' : '',
+                'book_public' : '',
+                'book_place' : '',
+                'book_num' : '',
+                'book_status' : ''
+            });
+
+            layer.open({
+                type: 2
+                ,title: '添加图书'
+                ,content:lend_add
+                ,maxmin: true
+                ,area: ['100%', '100%']
+                ,btn: ['确定', '取消']
+                ,yes: function(index, layero){
+                    $('#form-submit').click();
+                }
+            });
+        });
+
+        table.on('tool(list_table)', function(obj)
+        {
+            var data = obj.data;
+
+            if(obj.event === 'edit')
+            {
+                form.val('form-data',{
+                    'book_id' : data.book_id,
+                    'book_cert' : data.book_cert,
+                    'book_name' : data.book_name,
+                    'book_cate' : data.book_cate,
+                    'book_public' : data.book_public,
+                    'book_place' : data.book_place,
+                    'book_num' : data.book_num,
+                    'book_status' : data.book_status
+                });
+
+                layer.open({
+                    type: 1
+                    ,title: '修改图书'
+                    ,content: $('#form-data')
+                    ,maxmin: true
+                    ,area: ['850px', '650px']
+                    ,btn: ['确定', '取消']
+                    ,yes: function(index, layero){
+                        $('#form-submit').click();
+                    }
+                });
+            }
+        });
+
+        form.on('submit(form-submit)', function(data)
+        {
+
+            $.post(
+                book_save,
+                data.field,
+                function(res){
+                    layer.msg(res.msg, {shade:0.1,time:1500}, function(){
+                        if(res.code == 1)
+                        {
+                            table.reload('list_table'); //重载表格
+                            layer.closeAll();
+                        }
+
+
+                    });
+                },'json'
+            );
+        });
+    });
+</script>
+</body>
+</html>
