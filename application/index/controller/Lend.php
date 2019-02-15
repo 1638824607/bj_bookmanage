@@ -1,6 +1,7 @@
 <?php
 namespace app\index\controller;
 
+use app\index\model\Pay;
 use app\index\model\UserCate;
 
 class Lend extends Base
@@ -262,6 +263,11 @@ class Lend extends Base
         return view('lend_add');
     }
 
+    public function lend_repay_add()
+    {
+        return view('lend_repay_add');
+    }
+
     public function get_user_info()
     {
         $userName = input('user_name');
@@ -387,6 +393,108 @@ class Lend extends Base
             $bookRow['book_now_num'] = $bookRow['book_num'];
             $book->create($bookRow);
         }
+
+        return ['code' => 1, 'msg' => '操作成功'];
+    }
+
+    public function lend_repay_list()
+    {
+        $cate   = new \app\index\model\Cate();
+        $public = new \app\index\model\Publics();
+        $place  = new \app\index\model\Place();
+
+        $cateList   = $cate->where('cate_status', 2)->column('*');
+        $publicList = $public->where('public_status', 2)->column('*');
+        $placeList  = $place->where('place_status', 2)->column('*');
+
+        return view('lend_repay_list', [
+            'cateList'   => $cateList,
+            'publicList' => $publicList,
+            'placeList'  => $placeList
+        ]);
+    }
+
+    public function lend_repay_table()
+    {
+        $limit = empty(intval(input('limit'))) ? 20 : intval(input('limit'));
+
+        $userName     = empty(trim(input('user_name'))) ? '' : trim(input('user_name'));
+        $userNickName = empty(trim(input('user_nickname'))) ? '' : trim(input('user_nickname'));
+        $bookCert     = empty(intval(input('book_cert'))) ? 0 : intval(input('book_cert'));
+        $bookName     = empty(trim(input('book_name'))) ? '' : trim(input('book_name'));
+
+        $whereArr = [];
+
+        if(! empty($userName)) {
+            $whereArr['lend.user_name'] = $userName;
+        }
+
+        if(! empty($userNickName)) {
+            $whereArr['user_nickname'] = $userNickName;
+        }
+
+        if(! empty($bookCert)) {
+            $whereArr['lend.book_cert'] = $bookCert;
+        }
+
+        if(! empty($bookName)) {
+            $whereArr['book_name'] = $bookName;
+        }
+
+        $pay = new \app\index\model\Pay();
+
+        $payList = $pay->field('book.book_cert,book.book_price,book.book_name,user.user_name,user.user_nickname,pay.created_at,pay_price')->alias('pay')
+            ->join('book_info book', 'pay.book_cert = book.book_cert')
+            ->join('user_info user', 'user.user_name = pay.user_name')
+            ->where($whereArr)
+            ->order('pay_id', 'desc')
+            ->paginate($limit);
+
+        return [
+            'code'  => 0,
+            'count' => $payList->total(),
+            'data'  => $payList->toArray()['data'],
+            'msg'   => 'success'
+        ];
+    }
+
+    public function lend_repay()
+    {
+        $bookCert = input('book_cert');
+        $userName = input('user_name');
+        $payPrice = input('pay_price');
+
+        if(empty(intval($bookCert)) || empty(intval($userName))) {
+            return ['code' => 0, 'msg' => '请输入图书编号或用户编号'];
+        }
+
+        if(empty(floatval($payPrice))) {
+            return ['code' => 0, 'msg' => '请输入图书赔偿价格'];
+        }
+
+        $book = new \app\index\model\Book();
+        $user = new \app\index\model\User();
+
+        $bookRow = $book->where('book_cert', $bookCert)->find();
+        $userRow = $user->where('user_name', $userName)->find();
+
+        if(empty($bookRow) || empty($userRow)) {
+            return ['code' => 0, 'msg' => '图书编号或用户编号输入错误'];
+        }
+
+        if($bookRow['book_price'] < $payPrice) {
+            return ['code' => 0, 'msg' => '赔偿价格不得大于图书价格'];
+        }
+
+        $pay = new Pay();
+
+        $payRow = [
+            'book_cert' => $bookCert,
+            'user_name' => $userName,
+            'pay_price' => $payPrice
+        ];
+
+        $pay->create($payRow);
 
         return ['code' => 1, 'msg' => '操作成功'];
     }

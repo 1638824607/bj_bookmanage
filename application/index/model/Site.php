@@ -19,6 +19,7 @@ class Site extends Model
         'site_time' =>  'string',
         'site_user'   =>  'string',
         'site_tel'   =>  'string',
+        'site_content'   =>  'string',
         'created_at'  =>  'timestamp',
         'updated_at'  =>  'timestamp',
     ];

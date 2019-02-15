@@ -58,7 +58,7 @@
 
                 <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
                     <li data-name="home" class="layui-nav-item layui-nav-itemed">
-                        <a href="javascript:;" lay-tips="主页" lay-direction="2">
+                        <a href="javascript:;" lay-tips="首页" lay-direction="2">
                             <i class="layui-icon layui-icon-home"></i>
                             <cite>首页</cite>
                         </a>
@@ -73,7 +73,7 @@
                     </li>
 
                     <li data-name="template" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="页面" lay-direction="2">
+                        <a href="javascript:;" lay-tips="用户管理" lay-direction="2">
                             <i class="layui-icon layui-icon-user"></i>
                             <cite>用户管理</cite>
                         </a>
@@ -85,7 +85,7 @@
                     </li>
 
                     <li data-name="app" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="应用" lay-direction="2">
+                        <a href="javascript:;" lay-tips="图书管理" lay-direction="2">
                             <i class="layui-icon layui-icon-read"></i>
                             <cite>图书管理</cite>
                         </a>
@@ -106,7 +106,7 @@
                         </dl>
                     </li>
                     <li data-name="set" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="设置" lay-direction="2">
+                        <a href="javascript:;" lay-tips="图书借阅" lay-direction="2">
                             <i class="layui-icon layui-icon-template"></i>
                             <cite>图书借阅</cite>
                         </a>
@@ -117,10 +117,13 @@
                             <dd data-name="tabs2">
                                 <a lay-href="{:url('lend/lend_expired_list')}">借阅到期</a>
                             </dd>
+                            <dd data-name="tabs3">
+                                <a lay-href="{:url('lend/lend_repay_list')}">图书赔偿</a>
+                            </dd>
                         </dl>
                     </li>
                     <li data-name="component" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="组件" lay-direction="2">
+                        <a href="javascript:;" lay-tips="系统设置" lay-direction="2">
                             <i class="layui-icon layui-icon-set"></i>
                             <cite>系统设置</cite>
                         </a>

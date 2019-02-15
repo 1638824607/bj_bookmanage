@@ -46,6 +46,12 @@
                                 <input type="text" name="site_tel" value="<?php echo empty($siteRow['site_tel']) ? '' : $siteRow['site_tel']?>" lay-verify="required" class="layui-input">
                             </div>
                         </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">公告</label>
+                            <div class="layui-input-block">
+                                <textarea name="site_content" placeholder="请输入系统公告" class="layui-textarea"><?php echo empty($siteRow['site_content']) ? '' : $siteRow['site_content']?></textarea>
+                            </div>
+                        </div>
 
                         <div class="layui-form-item">
                             <div class="layui-input-block">

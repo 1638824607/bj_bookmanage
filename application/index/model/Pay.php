@@ -3,7 +3,7 @@ namespace app\index\model;
 
 use think\Model;
 
-class User extends Model
+class Pay extends Model
 {
     protected $resultSetType = 'collection';
 
@@ -11,19 +11,13 @@ class User extends Model
 
     protected $update = ['updated_at'];
 
-    protected $table  = 'user_info';
+    protected $table  = 'book_pay_info';
 
     protected $type = [
-        'user_id'     =>  'integer',
+        'pay_id'     =>  'integer',
+        'book_cert'   =>  'string',
         'user_name'   =>  'string',
-        'user_nickname' =>  'string',
-        'user_pass'   =>  'string',
-        'user_status'   =>  'integer',
-        'user_email'   =>  'string',
-        'user_type'   =>  'integer',
-        'user_cate'   =>  'integer',
-        'last_ip'   =>  'string',
-        'last_time'   =>  'string',
+        'price'       =>  'string',
         'created_at'  =>  'timestamp',
         'updated_at'  =>  'timestamp',
     ];
@@ -33,11 +27,6 @@ class User extends Model
         return date('Y-m-d H:i:s');
     }
     protected function setUpdatedAtAttr()
-    {
-        return date('Y-m-d H:i:s');
-    }
-
-    protected function setLastTimeAttr()
     {
         return date('Y-m-d H:i:s');
     }

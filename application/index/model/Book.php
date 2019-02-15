@@ -15,8 +15,9 @@ class Book extends Model
 
     protected $type = [
         'book_id'     =>  'integer',
-        'book_cert'   =>  'integer',
+        'book_cert'   =>  'string',
         'book_name' =>  'string',
+        'book_price' =>  'string',
         'book_place'   =>  'integer',
         'book_cate'   =>  'integer',
         'book_public'   =>  'integer',

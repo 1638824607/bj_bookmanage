@@ -90,7 +90,7 @@
                     {
                         foreach($publicList as $publicRow)
                         { ?>
-                            <option value="<?php echo $publicRow['public_id']; ?>"><?php echo $publicRow['public_name']; ?></option>
+                    <option value="<?php echo $publicRow['public_id']; ?>"><?php echo $publicRow['public_name']; ?></option>
                     <?php }
                    } ?>
                 </select>
@@ -110,6 +110,13 @@
                     <?php }
                    } ?>
                 </select>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">图书价格</label>
+            <div class="layui-input-block">
+                <input type="number" step="0.01" name="book_price" lay-verify="required|bookPrice" placeholder="请输入图书价格" autocomplete="off" class="layui-input">
             </div>
         </div>
 
@@ -162,17 +169,19 @@
             elem: '#list_table'
             ,url: book_table_url //数据接口
             ,method:'post'
+            ,toolbar: true
+            ,defaultToolbar: ['filter', 'print', 'exports']
             ,page: true //开启分页
             ,limit:20  //每页行数 默认10
             ,limits: [10, 20, 30]
             ,cols: [[ //表头
-                {field : 'book_cert', title: '图书编号', sort: true}
-                ,{field : 'book_name',width:250, title: '图书名称'}
+                {field : 'book_cert', title: '编号', sort: true}
+                ,{field : 'book_name', title: '图书名称'}
                 ,{field : 'book_cate', title: '图书类别',templet:function(d){
                     var cateName = cateList[d.book_cate] ?  cateList[d.book_cate]['cate_name'] : '已屏蔽';
                     return "<div>" + cateName+"</div>"
                 }}
-                ,{field : 'book_public', width:200,title: '出版社',templet:function(d){
+                ,{field : 'book_public', title: '出版社',templet:function(d){
                     var publicName = publicList[d.book_public] ?  publicList[d.book_public]['public_name'] : '已屏蔽';
                     return "<div>" + publicName+"</div>"
                 }}
@@ -180,8 +189,8 @@
                     var placeName = placeList[d.book_place] ?  placeList[d.book_place]['place_name'] : '已屏蔽';
                     return "<div>" + placeName+"</div>"
                 }}
-                ,{field : 'book_num', title: '图书库存'}
-                ,{field : 'book_now_num', title: '当前库存'}
+                ,{field : 'book_num', title: '总库存'}
+                ,{field : 'book_now_num', title: '现库存'}
                 ,{field : 'book_total_out', title: '借出次数'}
                 ,{field: 'book_status',  title: '状态',templet:'<div>{{d.book_status == 1 ? "屏蔽" : "正常"}}</div>'}
                 ,{title: "操作",align: "center", fixed: "right", toolbar: "#table-content-list"}
@@ -194,6 +203,7 @@
                 'book_id' : '',
                 'book_cert' : '',
                 'book_name' : '',
+                'book_price' : '',
                 'book_cate' : '',
                 'book_public' : '',
                 'book_place' : '',
@@ -206,12 +216,21 @@
                 ,title: '添加图书'
                 ,content: $('#form-data')
                 ,maxmin: true
-                ,area: ['850px', '650px']
+                ,area: ['100%', '100%']
                 ,btn: ['确定', '取消']
                 ,yes: function(index, layero){
                     $('#form-submit').click();
                 }
             });
+        });
+
+        form.verify({
+            bookPrice: function(value, item){
+                if(value <=0){
+                    return '图书价格不能小于0';
+                }
+            }
+
         });
 
         form.on('submit(book-search-form-submit)', function(data){
@@ -233,6 +252,7 @@
                 form.val('form-data',{
                     'book_id' : data.book_id,
                     'book_cert' : data.book_cert,
+                    'book_price' : data.book_price,
                     'book_name' : data.book_name,
                     'book_cate' : data.book_cate,
                     'book_public' : data.book_public,
@@ -246,7 +266,7 @@
                     ,title: '修改图书'
                     ,content: $('#form-data')
                     ,maxmin: true
-                    ,area: ['850px', '650px']
+                    ,area: ['100%', '100%']
                     ,btn: ['确定', '取消']
                     ,yes: function(index, layero){
                         $('#form-submit').click();
@@ -268,8 +288,6 @@
                             table.reload('list_table'); //重载表格
                             layer.closeAll();
                         }
-
-
                     });
                 },'json'
             );

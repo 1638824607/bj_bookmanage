@@ -100,6 +100,8 @@
             elem: '#list_table'
             ,url: lend_table_url //数据接口
             ,method:'post'
+            ,toolbar: true
+            ,defaultToolbar: ['filter', 'print', 'exports']
             ,page: true //开启分页
             ,limit:20  //每页行数 默认10
             ,limits: [10, 20, 30]
@@ -117,8 +119,8 @@
                 }}
                 ,{field : 'user_name', title: '用户编号'}
                 ,{field : 'user_nickname', title: '姓名'}
-                ,{field : 'created_at',width:180,title: '借阅时间'}
-                ,{field : 'expired_time',width:180, title: '应还时间'}
+                ,{field : 'created_at',title: '借阅时间'}
+                ,{field : 'expired_time', title: '应还时间'}
                 ,{field : 'user_name',sort: true,title: '逾期时间',templet:function(d){
                     return "<div>"+timeFn(d.expired_time)+"</div>"
                 }}
