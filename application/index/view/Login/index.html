@@ -24,6 +24,7 @@
                 <input type="password" placeholder="密码" autocomplete="off" class="user_pass">
                 <button type="button" id="login">登录</button>
             </form>
+            <a href="{:url('forget_pass')}" style="text-decoration:none;color: black;"><span style="cursor:pointer;">忘记密码?</span></a>
         </div>
     </div>
 </div>
@@ -66,7 +67,7 @@
                 layer.msg(data.msg,{time:1500,shade:0.1},function(){
                     if(data.code == 1)
                     {
-                        window.location.href = "{:url('index/index')}";
+                        window.location.href = "{:url('/')}";
                     }
                 });
             }

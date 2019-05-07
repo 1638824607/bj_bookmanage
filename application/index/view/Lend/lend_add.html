@@ -67,6 +67,13 @@
                                     <input type="text"  placeholder="可借数量" readonly  class="layui-input user_total">
                                 </div>
                             </div>
+
+                            <div class="layui-inline">
+                                <label class="layui-form-label">已借数量</label>
+                                <div class="layui-input-inline">
+                                    <input type="text"  placeholder="已借数量" readonly  class="layui-input user_already_total">
+                                </div>
+                            </div>
                         </div>
                     </form>
 
@@ -170,6 +177,7 @@
                             $('.user_email').val(res.data.user_email);
                             $('.user_cate').val(res.data.user_cate);
                             $('.user_total').val(res.data.user_total);
+                            $('.user_already_total').val(res.data.user_already_total);
                         }
 
                     });

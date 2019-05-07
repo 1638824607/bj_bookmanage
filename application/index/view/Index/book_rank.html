@@ -171,6 +171,7 @@
     $.post(
         "{:url('ajax_book_rank')}",
         function(res){
+            console.log(res);
             if(! $.isEmptyObject(res['lend_week']))
             {
                 option1['series'][0]['data'] = [];

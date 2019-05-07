@@ -29,6 +29,18 @@
                 </div>
 
                 <div class="layui-inline">
+                    <label class="layui-form-label">图书类别</label>
+                    <div class="layui-input-inline">
+                        <select name="book_cate" lay-search>
+                            <option value=""></option>
+                            {volist name="cateList" id="cateRow"}
+                                <option value="{$cateRow['cate_id']}">{$cateRow['cate_name']}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline">
                     <button class="layui-btn layuiadmin-btn-list" lay-submit lay-filter="book-search-form-submit">
                         <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
                     </button>
@@ -194,7 +206,8 @@
                 ,{field : 'book_total_out', title: '借出次数'}
                 ,{field: 'book_status',  title: '状态',templet:'<div>{{d.book_status == 1 ? "屏蔽" : "正常"}}</div>'}
                 ,{title: "操作",align: "center", fixed: "right", toolbar: "#table-content-list"}
-            ]]
+
+                ]]
         });
 
         $('.form-add').on('click', function()

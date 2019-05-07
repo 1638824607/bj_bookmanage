@@ -54,6 +54,12 @@
     </div>
 </div>
 
+<script type="text/html" id="table-content-list">
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon  layui-icon-auz"></i>归还</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="edit"><i class="layui-icon  layui-icon-rmb"></i>赔偿</a>
+    <a class="layui-btn layui-btn-xs" lay-event="lend"><i class="layui-icon layui-icon-refresh"></i>续借</a>
+</script>
+
 <script src="/static/admin/lib/layui/layui.js"></script>
 <script>
     var lend_table_url = '{:url("lend/lend_user_table")}';
@@ -104,6 +110,7 @@
                 }}
                 ,{field : 'created_at', width:180,title: '借阅时间'}
                 ,{field : 'expired_time', width:180,title: '应还时间'}
+                ,{title: "操作", minWidth:220,align: "center", fixed: "right", toolbar: "#table-content-list"}
             ]]
         });
 

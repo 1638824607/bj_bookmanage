@@ -29,9 +29,9 @@ class Lend extends Base
         $cate   = new \app\index\model\Cate();
         $public = new \app\index\model\Publics();
         $place  = new \app\index\model\Place();
+        $lend   = new \app\index\model\Lend();
 
-        $cateList = $cate->where('cate_status', 2)->column('*');
-
+        $cateList   = $cate->where('cate_status', 2)->column('*');
         $publicList = $public->where('public_status', 2)->column('*');
         $placeList  = $place->where('place_status', 2)->column('*');
 
@@ -59,7 +59,7 @@ class Lend extends Base
         }
 
         if(! empty($bookName)) {
-            $whereArr['book_name'] = $bookName;
+            $whereArr['book_name'] = ['like', "%{$bookName}%"];
         }
 
         if(! empty($lendStatus)) {
@@ -126,7 +126,7 @@ class Lend extends Base
         }
 
         if(! empty($bookName)) {
-            $whereArr['book_name'] = $bookName;
+            $whereArr['book_name'] = ['like', "%{$bookName}%"];
         }
 
         if(! empty($lendStatus)) {
@@ -263,6 +263,11 @@ class Lend extends Base
         return view('lend_add');
     }
 
+    public function lend_user_add()
+    {
+        return view('lend_user_add');
+    }
+
     public function lend_repay_add()
     {
         return view('lend_repay_add');
@@ -298,6 +303,10 @@ class Lend extends Base
 
         $userRow['user_cate'] = $userCateRow['cate_name'];
         $userRow['user_total'] = $userCateRow['limit_num'];
+
+        $bookLend = new \app\index\model\Lend();
+
+        $userRow['user_already_total'] = $bookLend->where('user_name', $userName)->where('lend_status', 1)->count('lend_id');
 
         return ['code' => 1, 'msg' => '获取用户成功', 'data' => $userRow];
     }
@@ -336,12 +345,19 @@ class Lend extends Base
 
         $book = new \app\index\model\Book();
         $user = new \app\index\model\User();
+        $lend = new \app\index\model\Lend();
 
         $bookRow = $book->where('book_cert', $bookCert)->find();
         $userRow = $user->where('user_name', $userName)->find();
 
         if(empty($bookRow) || empty($userRow)) {
             return ['code' => 0, 'msg' => '图书编号或用户编号输入错误'];
+        }
+
+        $lendRow = $lend->where('user_name', $userName)->where('book_cert', $bookCert)->where('lend_status', 1)->find();
+
+        if(! empty($lendRow)) {
+            return ['code' => 0, 'msg' => '该图书未归还'];
         }
 
         if($bookRow['book_now_num'] < 1) {
@@ -363,6 +379,69 @@ class Lend extends Base
 
         if($limitNum <= $lendNum) {
             return ['code' => 0, 'msg' => '该用户借书数量已达上限'];
+        }
+
+        $lendRow = [
+            'book_cert'    => $bookCert,
+            'user_name'    => $userName,
+            'lend_status'  => 1,
+            'expired_time' => date('Y-m-d H:i:s', time() + $limitDay * 24 * 60 * 60),
+        ];
+
+        $lend->create($lendRow);
+
+        $book->where('book_cert', $bookCert)->setDec('book_now_num');
+        $book->where('book_cert', $bookCert)->setInc('book_total_out');
+
+        return ['code' => 1, 'msg' => '图书借出成功'];
+    }
+
+    public function lend_user_book()
+    {
+        $bookCert = input('book_cert');
+
+        $userName = session('user_info')['user_name'];
+
+        if(empty(intval($bookCert)) || empty(intval($userName))) {
+            return ['code' => 0, 'msg' => '请输入图书编号或用户编号'];
+        }
+
+        $book = new \app\index\model\Book();
+        $user = new \app\index\model\User();
+        $lend = new \app\index\model\Lend();
+
+        $bookRow = $book->where('book_cert', $bookCert)->find();
+        $userRow = $user->where('user_name', $userName)->find();
+
+        if(empty($bookRow) || empty($userRow)) {
+            return ['code' => 0, 'msg' => '图书编号或用户编号输入错误'];
+        }
+
+        $lendRow = $lend->where('user_name', $userName)->where('book_cert', $bookCert)->where('lend_status', 1)->find();
+
+        if(! empty($lendRow)) {
+            return ['code' => 0, 'msg' => '该图书未归还'];
+        }
+
+        if($bookRow['book_now_num'] < 1) {
+            return ['code' => 0, 'msg' => '该图书已被借完'];
+        }
+
+        $userCate = new UserCate();
+
+        $userCateRow = $userCate->where('cate_id', $userRow['user_cate'])->find();
+
+        $limitNum = $userCateRow['limit_num'];
+        $limitDay = $userCateRow['limit_day'];
+
+        $lend = new \app\index\model\Lend();
+
+        $lendList = $lend->where('user_name', $userName)->where('lend_status', 1)->select();
+
+        $lendNum = count($lendList);
+
+        if($limitNum <= $lendNum) {
+            return ['code' => 0, 'msg' => '当前借书数量已达上限'];
         }
 
         $lendRow = [
@@ -422,6 +501,7 @@ class Lend extends Base
         $userNickName = empty(trim(input('user_nickname'))) ? '' : trim(input('user_nickname'));
         $bookCert     = empty(intval(input('book_cert'))) ? 0 : intval(input('book_cert'));
         $bookName     = empty(trim(input('book_name'))) ? '' : trim(input('book_name'));
+        $payStatus    = empty(intval(input('pay_status'))) ? 0 : intval(input('pay_status'));
 
         $whereArr = [];
 
@@ -438,12 +518,16 @@ class Lend extends Base
         }
 
         if(! empty($bookName)) {
-            $whereArr['book_name'] = $bookName;
+            $whereArr['book_name'] = ['like', "%{$bookName}%"];
+        }
+
+        if(! empty($payStatus)) {
+            $whereArr['pay_status'] = $payStatus;
         }
 
         $pay = new \app\index\model\Pay();
 
-        $payList = $pay->field('book.book_cert,book.book_price,book.book_name,user.user_name,user.user_nickname,pay.created_at,pay_price')->alias('pay')
+        $payList = $pay->field('book.book_cert,book.book_price,book.book_name,user.user_name,user.user_nickname,pay.created_at,pay_id,pay_price,pay_reason,pay_status')->alias('pay')
             ->join('book_info book', 'pay.book_cert = book.book_cert')
             ->join('user_info user', 'user.user_name = pay.user_name')
             ->where($whereArr)
@@ -460,9 +544,10 @@ class Lend extends Base
 
     public function lend_repay()
     {
-        $bookCert = input('book_cert');
-        $userName = input('user_name');
-        $payPrice = input('pay_price');
+        $bookCert  = input('book_cert');
+        $userName  = input('user_name');
+        $payPrice  = input('pay_price');
+        $payReason = input('pay_reason');
 
         if(empty(intval($bookCert)) || empty(intval($userName))) {
             return ['code' => 0, 'msg' => '请输入图书编号或用户编号'];
@@ -489,12 +574,28 @@ class Lend extends Base
         $pay = new Pay();
 
         $payRow = [
-            'book_cert' => $bookCert,
-            'user_name' => $userName,
-            'pay_price' => $payPrice
+            'book_cert'  => $bookCert,
+            'user_name'  => $userName,
+            'pay_price'  => $payPrice,
+            'pay_reason' => $payReason,
         ];
 
         $pay->create($payRow);
+
+        return ['code' => 1, 'msg' => '操作成功'];
+    }
+
+    public function lend_repay_pay()
+    {
+        $payId = input('pay_id');
+
+        if(empty(intval($payId))) {
+            return ['code' => 0, 'msg' => '未获取到缴费凭证'];
+        }
+
+        $pay = new Pay();
+
+        $pay->where('pay_id', $payId)->update(['pay_status' => 2]);
 
         return ['code' => 1, 'msg' => '操作成功'];
     }

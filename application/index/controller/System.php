@@ -74,9 +74,24 @@ class System extends Base
             return ['code' => 0, 'msg' => '邮箱验证码错误！'];
         }
 
+        if(session('bind_email') != $userEmail) {
+            return ['code' => 0, 'msg' => '发送邮箱与输入邮箱不一致！'];
+        }
+
         $userId = session('user_info')['user_id'];
 
         $user = new User();
+
+        $userRow = $user->where('user_email', $userEmail)->find();
+
+        if(! empty($userRow))
+        {
+            if($userRow['user_id'] == $userId) {
+                return ['code' => 0, 'msg' => '检测邮箱一致，无需变更！'];
+            }else {
+                return ['code' => 0, 'msg' => '该邮箱已存在，请重新输入！'];
+            }
+        }
 
         $user->save(['user_email' => $userEmail], ['user_id' => $userId]);
 
@@ -86,6 +101,7 @@ class System extends Base
 
         session('user_info', $userInfo);
         session('bind_email_code', NULL);
+        session('bind_email', NULL);
 
         return ['code' => 1, 'msg' => '更改成功！'];
     }
@@ -107,6 +123,7 @@ class System extends Base
         }
 
         session('bind_email_code', $emailCode);
+        session('bind_email', $userEmail);
 
         return ['code' => 1, 'msg' => '发送验证码成功'];
     }

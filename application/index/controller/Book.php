@@ -26,16 +26,20 @@ class Book extends Base
         $cate = new \app\index\model\Cate();
         $public = new \app\index\model\Publics();
         $place = new \app\index\model\Place();
+        $lend = new \app\index\model\Lend();
 
         $cateList = $cate->where('cate_status', 2)->column('*');
 
         $publicList = $public->where('public_status', 2)->column('*');
         $placeList = $place->where('place_status', 2)->column('*');
 
+        $lendList = $lend->where('user_name', session('user_info')['user_name'])->where('lend_status', 1)->column('book_cert');
+
         return view('book_user_list', [
-            'cateList' => $cateList,
+            'cateList'   => $cateList,
             'publicList' => $publicList,
-            'placeList' => $placeList
+            'placeList'  => $placeList,
+            'lendList'   => $lendList,
         ]);
     }
 
@@ -45,6 +49,7 @@ class Book extends Base
 
         $bookCert = empty(intval(input('book_cert'))) ? 0 : intval(input('book_cert'));
         $bookName = empty(trim(input('book_name'))) ? '' : trim(input('book_name'));
+        $bookCate = empty(intval(input('book_cate'))) ? 0 : intval(input('book_cate'));
 
         $whereArr = [];
 
@@ -53,7 +58,11 @@ class Book extends Base
         }
 
         if(! empty($bookName)) {
-            $whereArr['book_name'] = $bookName;
+            $whereArr['book_name'] = ['like', "%{$bookName}%"];
+        }
+
+        if(! empty($bookCate)) {
+            $whereArr['book_cate'] = $bookCate;
         }
 
         $book = new \app\index\model\Book();
@@ -70,7 +79,7 @@ class Book extends Base
 
     public function book_save()
     {
-        $bookRow = input('');
+        $bookRow = input('post.');
 
         $bookCert = intval($bookRow['book_cert']);
         $bookName = trim($bookRow['book_name']);
@@ -104,6 +113,7 @@ class Book extends Base
             }
 
             $book->save($bookRow, ['book_id' => $bookRow['book_id']]);
+
         }else
         {
             $bookRow['book_now_num'] = $bookRow['book_num'];

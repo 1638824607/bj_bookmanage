@@ -17,6 +17,8 @@ class Base extends Controller
         'home/site_info',
         'book/book_table',
         'lend/lend_user_table',
+        'lend/lend_user_add',
+        'lend/lend_user_book'
     ];
 
     public function __construct()
