@@ -49,6 +49,8 @@
                             <option value=""></option>
                             <option value="1">借阅中</option>
                             <option value="2">已归还</option>
+                            <option value="3">续借中</option>
+                            <option value="4">已赔偿</option>
                         </select>
                     </div>
                 </div>
@@ -72,7 +74,7 @@
 </div>
 
 <script type="text/html" id="table-content-list">
-    {{#if(d.lend_status != 2){ }}
+    {{#if(d.lend_status != 2 && d.lend_status != 4){ }}
     <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="return"><i class="layui-icon layui-icon-auz"></i>归还</a>
     <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="lend"><i class="layui-icon layui-icon-refresh"></i>续借</a>
     {{# } }}
@@ -97,7 +99,7 @@
         var lend_status_url = "{:url('lend/lend_status')}";
         var lendBookUrl = "{:url('lend/lend_book')}";
 
-        var lendStatusArr = {1:'借阅中',2:'已归还',3:'续借中'};
+        var lendStatusArr = {1:'借阅中',2:'已归还',3:'续借中', 4: "已赔偿"};
 
         var cateList = <?php echo json_encode($cateList); ?>;
         var publicList = <?php echo json_encode($publicList); ?>;

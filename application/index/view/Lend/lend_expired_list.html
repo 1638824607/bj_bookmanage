@@ -17,33 +17,33 @@
             <div class="layui-inline">
                 <label class="layui-form-label">图书编号</label>
                 <div class="layui-input-inline">
-                    <input type="text" name="article_title" placeholder="请输入图书编号" autocomplete="off" class="layui-input">
+                    <input type="text" name="book_cert" placeholder="请输入图书编号" autocomplete="off" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-inline">
                 <label class="layui-form-label">图书名称</label>
                 <div class="layui-input-inline">
-                    <input type="text" name="article_title" placeholder="请输入图书名称" autocomplete="off" class="layui-input">
+                    <input type="text" name="book_name" placeholder="请输入图书名称" autocomplete="off" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-inline">
                 <label class="layui-form-label">用户编号</label>
                 <div class="layui-input-inline">
-                    <input type="text" name="article_title" placeholder="请输入用户编号" autocomplete="off" class="layui-input">
+                    <input type="text" name="user_name" placeholder="请输入用户编号" autocomplete="off" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-inline">
                 <label class="layui-form-label">姓名</label>
                 <div class="layui-input-inline">
-                    <input type="text" name="article_title" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                    <input type="text" name="user_nickname" placeholder="请输入姓名" autocomplete="off" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-inline">
-                <button class="layui-btn layuiadmin-btn-list" lay-submit lay-filter="book-chapter-search-form-submit">
+                <button class="layui-btn layuiadmin-btn-list" lay-submit lay-filter="form-submit">
                     <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
                 </button>
             </div>
@@ -184,25 +184,35 @@
             }
         });
 
-        form.on('submit(form-submit)', function(data)
-        {
+        form.on('submit(form-submit)', function(data){
+            var field = data.field;
 
-            $.post(
-                book_save,
-                data.field,
-                function(res){
-                    layer.msg(res.msg, {shade:0.1,time:1500}, function(){
-                        if(res.code == 1)
-                        {
-                            table.reload('list_table'); //重载表格
-                            layer.closeAll();
-                        }
-
-
-                    });
-                },'json'
-            );
+            //执行重载
+            table.reload('list_table', {
+                where: field,
+                page: {curr: 1}
+            });
         });
+
+//        form.on('submit(form-submit)', function(data)
+//        {
+//
+//            $.post(
+//                book_save,
+//                data.field,
+//                function(res){
+//                    layer.msg(res.msg, {shade:0.1,time:1500}, function(){
+//                        if(res.code == 1)
+//                        {
+//                            table.reload('list_table'); //重载表格
+//                            layer.closeAll();
+//                        }
+//
+//
+//                    });
+//                },'json'
+//            );
+//        });
     });
 </script>
 </body>

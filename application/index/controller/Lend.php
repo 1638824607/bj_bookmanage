@@ -29,7 +29,6 @@ class Lend extends Base
         $cate   = new \app\index\model\Cate();
         $public = new \app\index\model\Publics();
         $place  = new \app\index\model\Place();
-        $lend   = new \app\index\model\Lend();
 
         $cateList   = $cate->where('cate_status', 2)->column('*');
         $publicList = $public->where('public_status', 2)->column('*');
@@ -154,6 +153,29 @@ class Lend extends Base
     {
         $limit = empty(intval(input('limit'))) ? 20 : intval(input('limit'));
 
+        $userName     = empty(trim(input('user_name'))) ? '' : trim(input('user_name'));
+        $userNickName = empty(trim(input('user_nickname'))) ? '' : trim(input('user_nickname'));
+        $bookCert     = empty(intval(input('book_cert'))) ? 0 : intval(input('book_cert'));
+        $bookName     = empty(trim(input('book_name'))) ? '' : trim(input('book_name'));
+
+        $whereArr = [];
+
+        if(! empty($userName)) {
+            $whereArr['lend.user_name'] = $userName;
+        }
+
+        if(! empty($userNickName)) {
+            $whereArr['user_nickname'] = $userNickName;
+        }
+
+        if(! empty($bookCert)) {
+            $whereArr['lend.book_cert'] = $bookCert;
+        }
+
+        if(! empty($bookName)) {
+            $whereArr['book_name'] = ['like', "%{$bookName}%"];
+        }
+
         $lend = new \app\index\model\Lend();
 
         $lendList = $lend->field('lend.*, book_name,book_cate,book_public,book_place, user_nickname')->alias('lend')
@@ -161,6 +183,7 @@ class Lend extends Base
             ->join('user_info user', 'user.user_name = lend.user_name')
             ->where('lend.expired_time', '<', date('Y-m-d H:i:s'))
             ->where('lend_status', 1)
+            ->where($whereArr)
             ->order('lend_id', 'desc')
             ->paginate($limit);
 
@@ -173,6 +196,92 @@ class Lend extends Base
     }
 
     public function lend_status()
+    {
+        $lendId = input('lend_id');
+        $lendStatus = input('lend_status');
+
+        if(empty($lendId) || empty($lendStatus)) {
+            return ['code' => 0, 'msg' => '参数有误，请刷新页面重试'];
+        }
+
+        $book = new \app\index\model\Book();
+        $bookLend = new \app\index\model\Lend();
+        $user = new \app\index\model\User();
+
+        $lendRow = $bookLend->where('lend_id', $lendId)->find();
+
+        if(empty($lendRow)) {
+            return ['code' => 0, 'msg' => '未找到该图书借出记录'];
+        }
+
+        $bookCert = $lendRow['book_cert'];
+
+        $bookRow = $book->where('book_cert', $bookCert)->find();
+
+        if(empty($bookRow)) {
+            return ['code' => 0, 'msg' => '该图书找不到'];
+        }
+
+        $bookRow = $bookRow->toArray();
+
+        if($bookRow['book_status'] != 2) {
+            return ['code' => 0, 'msg' => '该图书状态异常'];
+        }
+
+        if($lendStatus == 2) {
+            $book->where('book_cert', $bookCert)->setInc('book_now_num');
+
+            $bookLend->where('lend_id', $lendId)->update(['lend_status' => 2]);
+
+            return ['code' => 1, 'msg' => '图书已归还'];
+        }
+
+        $userRow = $user->where(['user_name' => $lendRow['user_name']])->find();
+
+        if(empty($userRow)) {
+            return ['code' => 0, 'msg' => '用户信息异常'];
+        }
+
+        $userRow = $userRow->toArray();
+
+        $userCateId = $userRow['user_cate'];
+
+        if(empty($userCateId)) {
+            return ['code' => 0, 'msg' => '用户身份异常'];
+        }
+
+        $userCate = new UserCate();
+
+        $userCateRow = $userCate->where(['cate_id' => $userCateId])->find();
+
+        if(empty($userCateRow)) {
+            return ['code' => 0, 'msg' => '用户身份异常'];
+        }
+
+        $userCateRow = $userCateRow->toArray();
+
+        $limitDay = empty($userCateRow['limit_day']) ? 0 : $userCateRow['limit_day'];
+
+        if(empty($limitDay)) {
+            return ['code' => 0, 'msg' => '用户身份数据异常'];
+        }
+
+        if($lendStatus == 3)
+        {
+            if(strtotime($lendRow['expired_time']) < time()) {
+                return ['code' => 0, 'msg' => '图书借阅到期未归还，不可续借'];
+            }
+
+            $lendTime = date('Y-m-d H:i:s', strtotime($lendRow['expired_time']) + $limitDay * 24 * 60 * 60);
+            $bookLend->where('lend_id', $lendId)->update(['expired_time' => $lendTime]);
+
+            $book->where('book_cert', $bookCert)->setInc('book_total_out');
+
+            return ['code' => 1, 'msg' => '图书续借成功'];
+        }
+    }
+
+    public function lend_user_status()
     {
         $lendId = input('lend_id');
         $lendStatus = input('lend_status');
@@ -506,19 +615,19 @@ class Lend extends Base
         $whereArr = [];
 
         if(! empty($userName)) {
-            $whereArr['lend.user_name'] = $userName;
+            $whereArr['user.user_name'] = $userName;
         }
 
         if(! empty($userNickName)) {
-            $whereArr['user_nickname'] = $userNickName;
+            $whereArr['user.user_nickname'] = $userNickName;
         }
 
         if(! empty($bookCert)) {
-            $whereArr['lend.book_cert'] = $bookCert;
+            $whereArr['pay.book_cert'] = $bookCert;
         }
 
         if(! empty($bookName)) {
-            $whereArr['book_name'] = ['like', "%{$bookName}%"];
+            $whereArr['book.book_name'] = ['like', "%{$bookName}%"];
         }
 
         if(! empty($payStatus)) {
@@ -546,15 +655,10 @@ class Lend extends Base
     {
         $bookCert  = input('book_cert');
         $userName  = input('user_name');
-        $payPrice  = input('pay_price');
         $payReason = input('pay_reason');
 
         if(empty(intval($bookCert)) || empty(intval($userName))) {
             return ['code' => 0, 'msg' => '请输入图书编号或用户编号'];
-        }
-
-        if(empty(floatval($payPrice))) {
-            return ['code' => 0, 'msg' => '请输入图书赔偿价格'];
         }
 
         $book = new \app\index\model\Book();
@@ -567,8 +671,8 @@ class Lend extends Base
             return ['code' => 0, 'msg' => '图书编号或用户编号输入错误'];
         }
 
-        if($bookRow['book_price'] < $payPrice) {
-            return ['code' => 0, 'msg' => '赔偿价格不得大于图书价格'];
+        if(empty($bookRow['book_price'])) {
+            return ['code' => 0, 'msg' => '图书赔偿价格未设置'];
         }
 
         $pay = new Pay();
@@ -576,26 +680,56 @@ class Lend extends Base
         $payRow = [
             'book_cert'  => $bookCert,
             'user_name'  => $userName,
-            'pay_price'  => $payPrice,
+            'pay_price'  => $bookRow['book_price'],
             'pay_reason' => $payReason,
+            'pay_status' => 2
         ];
 
         $pay->create($payRow);
 
+        $lend = new \app\index\model\Lend();
+
+        $lend->where('book_cert', $bookCert)->where('user_name',$userName)->update(['lend_status' => 4]);
+
         return ['code' => 1, 'msg' => '操作成功'];
     }
 
-    public function lend_repay_pay()
+    public function lend_user_repay()
     {
-        $payId = input('pay_id');
+        $bookCert  = input('book_cert');
+        $userName  = input('user_name');
+        $lendId    = input('lend_id');
+        $payReason = input('pay_reason');
 
-        if(empty(intval($payId))) {
-            return ['code' => 0, 'msg' => '未获取到缴费凭证'];
+        if(empty(intval($bookCert)) || empty(intval($userName)) || empty(intval($lendId))) {
+            return ['code' => 0, 'msg' => '请输入图书编号或用户编号'];
+        }
+
+        $book = new \app\index\model\Book();
+        $user = new \app\index\model\User();
+
+        $bookRow = $book->where('book_cert', $bookCert)->find();
+        $userRow = $user->where('user_name', $userName)->find();
+
+        if(empty($bookRow) || empty($userRow) || empty($bookRow['book_price'])) {
+            return ['code' => 0, 'msg' => '图书信息或用户信息异常'];
         }
 
         $pay = new Pay();
 
-        $pay->where('pay_id', $payId)->update(['pay_status' => 2]);
+        $payRow = [
+            'book_cert'  => $bookCert,
+            'user_name'  => $userName,
+            'pay_price'  => $bookRow['book_price'],
+            'pay_reason' => '',
+            'pay_status' => 2
+        ];
+
+        $pay->create($payRow);
+
+        $lend = new \app\index\model\Lend();
+
+        $lend->where('lend_id', $lendId)->update(['lend_status' => 4]);
 
         return ['code' => 1, 'msg' => '操作成功'];
     }

@@ -134,7 +134,7 @@
                         function(res){
                             layer.msg(res.msg, {shade:0.1,time:1500}, function(){
                                 if(res.code == 1) {
-                                    table.reload('list_table'); //重载表格
+                                    window.location.reload();
                                 }
 
                                 layer.closeAll();

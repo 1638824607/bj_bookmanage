@@ -18,7 +18,9 @@ class Base extends Controller
         'book/book_table',
         'lend/lend_user_table',
         'lend/lend_user_add',
-        'lend/lend_user_book'
+        'lend/lend_user_book',
+        'lend/lend_user_status',
+        'lend/lend_user_repay'
     ];
 
     public function __construct()

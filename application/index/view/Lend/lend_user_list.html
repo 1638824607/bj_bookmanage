@@ -35,6 +35,8 @@
                             <option value=""></option>
                             <option value="1">借阅中</option>
                             <option value="2">已归还</option>
+                            <option value="3">续借中</option>
+                            <option value="4">已赔偿</option>
                         </select>
                     </div>
                 </div>
@@ -55,9 +57,11 @@
 </div>
 
 <script type="text/html" id="table-content-list">
-    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon  layui-icon-auz"></i>归还</a>
-    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="edit"><i class="layui-icon  layui-icon-rmb"></i>赔偿</a>
+    {{#if(d.lend_status != 2 && d.lend_status != 4 ){ }}
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="return"><i class="layui-icon  layui-icon-auz"></i>归还</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="repay"><i class="layui-icon  layui-icon-rmb"></i>赔偿</a>
     <a class="layui-btn layui-btn-xs" lay-event="lend"><i class="layui-icon layui-icon-refresh"></i>续借</a>
+    {{# } }}
 </script>
 
 <script src="/static/admin/lib/layui/layui.js"></script>
@@ -75,10 +79,11 @@
         var layer   = layui.layer;
 
         var lend_add = "{:url('lend/lend_add')}";
-        var lend_status_url = "{:url('lend/lend_status')}";
+        var lend_status_url = "{:url('lend/lend_user_status')}";
         var lendBookUrl = "{:url('lend/lend_book')}";
+        var repay_pay_url  = "{:url('lend/lend_user_repay')}";
 
-        var lendStatusArr = {1:'借阅中',2:'已归还',3:'续借中'};
+        var lendStatusArr = {1:'借阅中',2:'已归还',3:'续借中', 4:'已赔偿'};
 
         var cateList = <?php echo json_encode($cateList); ?>;
         var publicList = <?php echo json_encode($publicList); ?>;
@@ -112,54 +117,6 @@
                 ,{field : 'expired_time', width:180,title: '应还时间'}
                 ,{title: "操作", minWidth:220,align: "center", fixed: "right", toolbar: "#table-content-list"}
             ]]
-        });
-
-        $('.form-add').on('click', function()
-        {
-            form.val('form-data',{
-                'book_id' : '',
-                'book_cert' : '',
-                'book_name' : '',
-                'book_cate' : '',
-                'book_public' : '',
-                'book_place' : '',
-                'book_num' : '',
-                'book_status' : ''
-            });
-
-            layer.open({
-                type: 2
-                ,title: '添加图书'
-                ,content:lend_add
-                ,maxmin: true
-                ,area: ['100%', '100%']
-                ,btn: ['确定', '取消']
-                ,yes: function(index, layero){
-                    var lendUserName = user_name;
-                    var lendBookCert = book_cert;
-
-                    if(lendUserName == '' || lendBookCert == '') {
-                        layer.msg('请选择用户或图书');
-                        return false;
-                    }
-
-                    $.post(
-                        lendBookUrl,
-                        {book_cert: lendBookCert,user_name:lendUserName},
-                        function(res){
-                            layer.msg(res.msg, {shade:0.1,time:1000}, function(){
-                                if(res.code == 1) {
-                                    table.reload('list_table'); //重载表格
-                                    layer.closeAll();
-                                }
-                            });
-                        },'json'
-                    );
-
-
-
-                }
-            });
         });
 
         form.on('submit(book-search-form-submit)', function(data){
@@ -203,6 +160,24 @@
                     $.post(
                         lend_status_url,
                         {lend_id: lend_id,lend_status:3},
+                        function(res){
+                            layer.msg(res.msg, {shade:0.1,time:1500}, function(){
+                                if(res.code == 1) {
+                                    table.reload('list_table'); //重载表格
+                                }
+
+                                layer.closeAll();
+                            });
+                        },'json'
+                    );
+                });
+            }
+            if(obj.event === 'repay')
+            {
+                layer.confirm('确认执行此操作吗?', {icon: 3, title:'图书赔偿'}, function(index){
+                    $.post(
+                        repay_pay_url,
+                        {user_name: data.user_name,book_cert:data.book_cert,lend_id:data.lend_id},
                         function(res){
                             layer.msg(res.msg, {shade:0.1,time:1500}, function(){
                                 if(res.code == 1) {
