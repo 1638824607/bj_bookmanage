@@ -1,8 +1,6 @@
 <?php
 namespace app\index\controller;
 
-use app\index\model\UserCate;
-
 class Publics extends Base
 {
     public function public_list()
@@ -28,7 +26,7 @@ class Publics extends Base
 
     public function public_save()
     {
-        $publicRow = input('');
+        $publicRow = input('post.');
 
         $publics = new \app\index\model\Publics();
 

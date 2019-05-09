@@ -26,7 +26,7 @@ class Cate extends Base
 
     public function cate_save()
     {
-        $cateRow = input('');
+        $cateRow = input('post.');
 
         $cate = new \app\index\model\Cate();
 

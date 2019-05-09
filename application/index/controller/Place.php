@@ -26,7 +26,7 @@ class Place extends Base
 
     public function place_save()
     {
-        $placeRow = input('');
+        $placeRow = input('post.');
 
         $place = new \app\index\model\Place();
 

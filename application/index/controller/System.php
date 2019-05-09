@@ -20,7 +20,7 @@ class System extends Base
 
     public function site_save()
     {
-        $siteRow = input('');
+        $siteRow = input('post.');
 
         $site = new Site();
 

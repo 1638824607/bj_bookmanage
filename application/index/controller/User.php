@@ -28,7 +28,7 @@ class User extends Base
 
     public function user_cate_save()
     {
-        $userCateRow = input('');
+        $userCateRow = input('post.');
 
         $userCate = new UserCate();
 
@@ -62,7 +62,6 @@ class User extends Base
 
         $userName     = empty(trim(input('user_name'))) ? '' : trim(input('user_name'));
         $userNickName = empty(trim(input('user_nickname'))) ? '' : trim(input('user_nickname'));
-
         $whereArr = [
             'user_type' => 1
         ];
@@ -89,7 +88,7 @@ class User extends Base
 
     public function user_save()
     {
-        $userRow = input('');
+        $userRow = input('post.');
 
         $user = new \app\index\model\User();
 
@@ -141,7 +140,7 @@ class User extends Base
 
     public function admin_save()
     {
-        $userRow = input('');
+        $userRow = input('post.');
 
         $user = new \app\index\model\User();
 

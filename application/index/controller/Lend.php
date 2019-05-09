@@ -570,7 +570,7 @@ class Lend extends Base
 
     public function lend_save()
     {
-        $bookRow = input('');
+        $bookRow = input('post.');
 
         $book = new \app\index\model\Book();
 
